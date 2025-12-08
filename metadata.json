@@ -1,0 +1,5 @@
+{
+  "name": "BrandIdentity AI",
+  "description": "A professional AI logo generator that creates unique, vector-style brand identities based on your industry, style, and color preferences using Gemini.",
+  "requestFramePermissions": []
+}
