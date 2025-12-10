@@ -8,19 +8,23 @@ export interface LogoFormData {
 
 export enum LogoStyle {
   MINIMALIST = 'Minimalist',
+  MODERN_LUXURY = 'Modern Luxury',
   GRADIENT_3D = '3D Gradient',
   GEOMETRIC = 'Geometric',
-  ABSTRACT = 'Abstract',
-  MASCOT = 'Mascot',
-  VINTAGE = 'Vintage',
-  CYBERPUNK = 'Cyberpunk',
+  ABSTRACT_FLUID = 'Abstract Fluid',
+  MASCOT_MODERN = 'Modern Mascot',
+  VINTAGE_RETRO = 'Vintage Retro',
+  CYBERPUNK_NEON = 'Cyberpunk Neon',
   HAND_DRAWN = 'Hand-drawn',
   NEGATIVE_SPACE = 'Negative Space',
-  TECH = 'Tech Circuitry',
-  ELEGANT = 'Elegant',
-  ISOMETRIC = 'Isometric',
-  POLYGONAL = 'Low Poly',
-  GLITCH = 'Glitch Art'
+  TECH_FUTURISTIC = 'Tech Futuristic',
+  ELEGANT_SERIF = 'Elegant Serif',
+  ISOMETRIC_3D = 'Isometric 3D',
+  LOW_POLY = 'Low Poly',
+  GLITCH_ART = 'Glitch Art',
+  MONOGRAM = 'Monogram',
+  NEUROMORPHIC = 'Neuromorphic',
+  POP_ART = 'Pop Art'
 }
 
 export interface GeneratedLogo {
