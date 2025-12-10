@@ -14,25 +14,27 @@ export const generateLogoImages = async (formData: LogoFormData): Promise<string
   const ai = new GoogleGenAI({ apiKey });
 
   const basePrompt = `
-    Design a professional logo for a brand.
+    Design a professional, creative logo for a brand.
     Brand Name: ${formData.brandName}
-    Industry: ${formData.industry}
+    Industry/Niche: ${formData.industry}
     Style: ${formData.style}
     Color Palette: ${formData.colors}
     ${formData.icon ? `Optional Icon/Symbol: ${formData.icon}` : ''}
     
+    Focus on simplicity, memorability, and clear visual identity.
     Requirements:
     - Clean vector-style graphic or high-quality illustration.
-    - Flat design, 2D, minimalist (unless style specifies otherwise).
+    - Flat design, 2D, minimalist (unless style specifies 3D, Gradient, Isometric, or complex effects).
     - White or solid color background for easy extraction.
     - Visually balanced and instantly recognizable.
     - High contrast and professional typography if text is included.
     - Do not include realistic photos; focus on graphic design.
+    - Provide the logo in a clean format suitable for web, print, and social media.
   `;
 
   const generateSingleVariation = async (index: number): Promise<string> => {
     // Add variation instruction to ensure diversity
-    const prompt = `${basePrompt}\n\nCreate variation #${index + 1} with a unique creative approach within the specified style.`;
+    const prompt = `${basePrompt}\n\nCreate variation #${index + 1} with a unique creative approach within the specified style. Make it visually striking and scalable.`;
     
     // Generate a random seed for this specific request
     const randomSeed = Math.floor(Math.random() * 1000000) + index;
@@ -48,6 +50,7 @@ export const generateLogoImages = async (formData: LogoFormData): Promise<string
         config: {
           systemInstruction: getSystemPrompt(),
           seed: randomSeed,
+          // Explicitly ask for 1 image per request (default, but good for clarity)
         }
       });
 
@@ -76,15 +79,30 @@ export const generateLogoImages = async (formData: LogoFormData): Promise<string
   };
 
   try {
-    // Generate 4 variations in parallel
-    const results = await Promise.all([
+    // Generate 4 variations in parallel using allSettled to be robust against single failures
+    const results = await Promise.allSettled([
       generateSingleVariation(1),
       generateSingleVariation(2),
       generateSingleVariation(3),
       generateSingleVariation(4)
     ]);
     
-    return results;
+    // Filter out failed requests and return only successful image strings
+    const successfulLogos = results
+      .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
+      .map(result => result.value);
+
+    // If all failed, throw an error
+    if (successfulLogos.length === 0) {
+      // Check if we have any specific error messages from the rejected promises
+      const errors = results
+        .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+        .map(result => result.reason?.message || "Unknown error");
+      
+      throw new Error(`Failed to generate logos. Errors: ${errors.join(', ')}`);
+    }
+
+    return successfulLogos;
 
   } catch (error) {
     console.error("Error generating logo batch:", error);

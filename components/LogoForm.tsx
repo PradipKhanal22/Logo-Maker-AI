@@ -77,13 +77,13 @@ export const LogoForm: React.FC<LogoFormProps> = ({ onSubmit, isGenerating }) =>
           <label htmlFor="style" className="block text-sm font-medium text-slate-300 flex items-center gap-2">
             <Layers className="w-4 h-4" /> Visual Style
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {Object.values(LogoStyle).map((style) => (
               <button
                 key={style}
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, style }))}
-                className={`text-xs sm:text-sm py-2 px-3 rounded-lg border transition-all duration-200 ${
+                className={`text-xs py-2 px-3 rounded-lg border transition-all duration-200 ${
                   formData.style === style
                     ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
                     : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
