@@ -1,3 +1,4 @@
+
 export interface LogoFormData {
   brandName: string;
   industry: string;
@@ -30,4 +31,11 @@ export enum LogoStyle {
 export interface GeneratedLogo {
   imageUrl: string;
   promptUsed: string;
+}
+
+export interface HistoryItem {
+  id: string;
+  timestamp: number;
+  formData: LogoFormData;
+  images: string[];
 }

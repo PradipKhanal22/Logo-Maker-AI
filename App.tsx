@@ -1,30 +1,52 @@
+
 import React, { useState } from 'react';
 import { LogoForm } from './components/LogoForm';
 import { LogoPreview } from './components/LogoPreview';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { LogoHistory } from './components/LogoHistory';
 import { generateLogoImages } from './services/geminiService';
-import { LogoFormData } from './types';
+import { LogoFormData, HistoryItem } from './types';
 import { Hexagon, Zap } from 'lucide-react';
 
 const App: React.FC = () => {
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [currentHistoryId, setCurrentHistoryId] = useState<string | undefined>(undefined);
 
   const handleGenerate = async (data: LogoFormData) => {
     setIsGenerating(true);
     setError(null);
     setGeneratedImages([]); // Clear previous images during generation
+    setCurrentHistoryId(undefined);
 
     try {
       const images = await generateLogoImages(data);
       setGeneratedImages(images);
+
+      // Add to session history
+      const newHistoryItem: HistoryItem = {
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+        formData: data,
+        images: images
+      };
+
+      setHistory(prev => [newHistoryItem, ...prev]);
+      setCurrentHistoryId(newHistoryItem.id);
+
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to generate logos. Please try again.");
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleHistorySelect = (item: HistoryItem) => {
+    setGeneratedImages(item.images);
+    setCurrentHistoryId(item.id);
   };
 
   return (
@@ -78,7 +100,7 @@ const App: React.FC = () => {
             )}
           </div>
 
-          {/* Right Column: Preview */}
+          {/* Right Column: Preview & History */}
           <div className="lg:col-span-7 xl:col-span-8 order-1 lg:order-2 flex flex-col">
             {isGenerating ? (
                <div className="h-[500px] flex items-center justify-center bg-slate-800/30 border border-slate-700 rounded-2xl">
@@ -96,6 +118,13 @@ const App: React.FC = () => {
                   </p>
                </div>
             )}
+
+            {/* Session History */}
+            <LogoHistory 
+              history={history} 
+              onSelect={handleHistorySelect} 
+              currentId={currentHistoryId} 
+            />
           </div>
 
         </div>

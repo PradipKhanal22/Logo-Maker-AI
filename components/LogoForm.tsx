@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { LogoFormData, LogoStyle } from '../types';
-import { Sparkles, Briefcase, Palette, Layers, Type } from 'lucide-react';
+import { Sparkles, Briefcase, Layers, Type } from 'lucide-react';
+import { ColorPicker } from './ColorPicker';
 
 interface LogoFormProps {
   onSubmit: (data: LogoFormData) => void;
@@ -12,13 +14,17 @@ export const LogoForm: React.FC<LogoFormProps> = ({ onSubmit, isGenerating }) =>
     brandName: '',
     industry: '',
     style: LogoStyle.MINIMALIST,
-    colors: '',
+    colors: 'Black (#000000) & White (#FFFFFF)',
     icon: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleColorChange = (colorValue: string) => {
+    setFormData(prev => ({ ...prev, colors: colorValue }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -96,22 +102,11 @@ export const LogoForm: React.FC<LogoFormProps> = ({ onSubmit, isGenerating }) =>
           </div>
         </div>
 
-        {/* Colors */}
-        <div className="space-y-2">
-          <label htmlFor="colors" className="block text-sm font-medium text-slate-300 flex items-center gap-2">
-            <Palette className="w-4 h-4" /> Color Palette
-          </label>
-          <input
-            type="text"
-            id="colors"
-            name="colors"
-            required
-            placeholder="e.g. Navy Blue & Gold, Pastel Green"
-            value={formData.colors}
-            onChange={handleChange}
-            className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder-slate-600"
-          />
-        </div>
+        {/* Colors (New Component) */}
+        <ColorPicker 
+          value={formData.colors} 
+          onChange={handleColorChange} 
+        />
 
         {/* Optional Icon */}
         <div className="space-y-2">

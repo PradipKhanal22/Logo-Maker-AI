@@ -116,23 +116,31 @@ export const generateLogoImages = async (formData: LogoFormData): Promise<string
   };
 
   try {
-    const results = await Promise.allSettled([
-      generateSingleVariation(0),
-      generateSingleVariation(1),
-      generateSingleVariation(2),
-      generateSingleVariation(3)
-    ]);
-    
-    const successfulLogos = results
-      .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
-      .map(result => result.value);
+    const successfulLogos: string[] = [];
+    const errors: string[] = [];
+
+    // Execute sequentially to avoid Rate Limiting (Quota Exceeded)
+    for (let i = 0; i < 4; i++) {
+      try {
+        const logo = await generateSingleVariation(i);
+        successfulLogos.push(logo);
+      } catch (err: any) {
+        console.warn(`Failed to generate variation ${i + 1}:`, err);
+        errors.push(err.message || "Unknown error");
+        
+        // If quota exceeded, stop attempting further requests to prevent account lockout
+        if (err.message && (err.message.includes('429') || err.message.toLowerCase().includes('quota'))) {
+           break;
+        }
+      }
+    }
 
     if (successfulLogos.length === 0) {
-      const errors = results
-        .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
-        .map(result => result.reason?.message || "Unknown error");
-      
-      throw new Error(`Failed to generate logos. Errors: ${errors.join(', ')}`);
+      // Improve error message for users
+      if (errors.some(e => e.includes('429') || e.toLowerCase().includes('quota'))) {
+        throw new Error("Service is busy (Quota Exceeded). Please wait a moment and try again.");
+      }
+      throw new Error(`Failed to generate logos. ${errors[0] || 'Please try again.'}`);
     }
 
     return successfulLogos;
