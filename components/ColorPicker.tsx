@@ -22,6 +22,15 @@ const PRESET_PALETTES: ColorPalette[] = [
   { name: 'Pastel Dream', value: 'Soft Pink (#F9A8D4) & Lavender', colors: ['#F9A8D4', '#E9D5FF'] },
   { name: 'Cyber Neon', value: 'Neon Cyan (#06B6D4) & Magenta', colors: ['#06B6D4', '#DB2777'] },
   { name: 'Corporate Trust', value: 'Navy (#1E3A8A) & Grey', colors: ['#1E3A8A', '#94A3B8'] },
+  // New Palettes
+  { name: 'Fiery Passion', value: 'Red (#DC2626) & Charcoal', colors: ['#DC2626', '#1F2937'] },
+  { name: 'Oceanic Depth', value: 'Teal (#0F766E) & Aqua', colors: ['#0F766E', '#99F6E4'] },
+  { name: 'Royal Majesty', value: 'Deep Purple (#581C87) & Gold', colors: ['#581C87', '#FBBF24'] },
+  { name: 'Urban Concrete', value: 'Slate (#475569) & Orange', colors: ['#475569', '#F97316'] },
+  { name: 'Midnight Lime', value: 'Midnight (#020617) & Lime', colors: ['#020617', '#84CC16'] },
+  { name: 'Sweet Berry', value: 'Raspberry (#BE185D) & Cream', colors: ['#BE185D', '#FDF2F8'] },
+  { name: 'Electric Voltage', value: 'High-Vis Yellow (#FACC15) & Black', colors: ['#000000', '#FACC15'] },
+  { name: 'Vintage Warmth', value: 'Brown (#78350F) & Beige', colors: ['#78350F', '#FEF3C7'] },
 ];
 
 export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => {
@@ -52,7 +61,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => 
         <span className="text-xs text-slate-500 truncate max-w-[150px]">{value || 'Select a palette'}</span>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {PRESET_PALETTES.map((palette) => (
           <button
             key={palette.name}
@@ -61,10 +70,10 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => 
               onChange(palette.value);
               setIsCustom(false);
             }}
-            className={`group relative h-10 w-full rounded-lg overflow-hidden border transition-all ${
+            className={`group relative h-12 w-full rounded-lg overflow-hidden border transition-all ${
               value === palette.value 
-                ? 'border-indigo-500 ring-2 ring-indigo-500/50 scale-105' 
-                : 'border-slate-700 hover:border-slate-500'
+                ? 'border-indigo-500 ring-2 ring-indigo-500/50 scale-105 z-10' 
+                : 'border-slate-700 hover:border-slate-500 hover:scale-[1.02]'
             }`}
             title={palette.name}
           >
@@ -75,9 +84,13 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => 
             </div>
             {value === palette.value && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                <Check className="w-4 h-4 text-white drop-shadow-md" />
+                <Check className="w-5 h-5 text-white drop-shadow-md" />
               </div>
             )}
+            {/* Tooltip-like label on hover for desktop */}
+            <div className="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[10px] py-0.5 opacity-0 group-hover:opacity-100 transition-opacity truncate px-1">
+              {palette.name}
+            </div>
           </button>
         ))}
       </div>
@@ -89,18 +102,18 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange }) => 
             onChange(`Custom Hex: ${customColor}`);
             setIsCustom(true);
           }}
-          className={`w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm transition-all ${
+          className={`w-full flex items-center justify-center gap-2 py-3 px-3 rounded-lg border text-sm transition-all ${
             isCustom 
               ? 'bg-slate-800 border-indigo-500 text-white' 
               : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600'
           }`}
         >
           <div 
-            className="w-4 h-4 rounded-full border border-slate-600 shadow-sm"
+            className="w-5 h-5 rounded-full border border-slate-600 shadow-sm"
             style={{ backgroundColor: customColor }}
           />
           <span>Use Custom Color</span>
-          {isCustom && <Check className="w-3 h-3 ml-auto text-indigo-400" />}
+          {isCustom && <Check className="w-4 h-4 ml-auto text-indigo-400" />}
         </button>
         
         {/* Invisible native color input overlaid on the button for functionality */}

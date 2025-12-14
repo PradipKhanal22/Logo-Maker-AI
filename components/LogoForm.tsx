@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { LogoFormData, LogoStyle } from '../types';
-import { Sparkles, Briefcase, Layers, Type, Info } from 'lucide-react';
+import { Sparkles, Briefcase, Layers, Type, Info, Image as ImageIcon, Upload, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { ColorPicker } from './ColorPicker';
 
 interface LogoFormProps {
@@ -144,10 +144,13 @@ export const LogoForm: React.FC<LogoFormProps> = ({ onSubmit, isGenerating }) =>
     industry: '',
     style: LogoStyle.MINIMALIST,
     colors: 'Black (#000000) & White (#FFFFFF)',
-    icon: ''
+    icon: '',
+    referenceImage: undefined
   });
 
   const [hoveredStyle, setHoveredStyle] = useState<LogoStyle | null>(null);
+  const [isStyleExpanded, setIsStyleExpanded] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -158,124 +161,200 @@ export const LogoForm: React.FC<LogoFormProps> = ({ onSubmit, isGenerating }) =>
     setFormData(prev => ({ ...prev, colors: colorValue }));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, referenceImage: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImage = () => {
+    setFormData(prev => ({ ...prev, referenceImage: undefined }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
   };
 
-  // Determine which style to show in preview (hovered > selected)
   const activeStyle = hoveredStyle || formData.style;
   const previewConfig = STYLE_PREVIEWS[activeStyle];
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6 shadow-xl">
-      <div className="mb-6">
+    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-xl overflow-hidden">
+      <div className="p-6 border-b border-slate-700/50 bg-slate-900/30">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-indigo-400" />
           Start Your Design
         </h2>
-        <p className="text-slate-400 text-sm mt-1">Fill in the details to generate your unique logo.</p>
+        <p className="text-slate-400 text-sm mt-1">Tell us about your brand to generate a unique identity.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="p-6 space-y-8">
         
-        {/* Brand Name */}
-        <div className="space-y-2">
-          <label htmlFor="brandName" className="block text-sm font-medium text-slate-300 flex items-center gap-2">
-            <Type className="w-4 h-4" /> Brand Name
-          </label>
-          <input
-            type="text"
-            id="brandName"
-            name="brandName"
-            required
-            placeholder="e.g. Apex Innovations"
-            value={formData.brandName}
-            onChange={handleChange}
-            className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder-slate-600"
-          />
-        </div>
+        {/* Section 1: Core Identity */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Brand Essentials</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="brandName" className="block text-sm font-medium text-slate-300 flex items-center gap-2">
+                <Type className="w-4 h-4" /> Brand Name
+              </label>
+              <input
+                type="text"
+                id="brandName"
+                name="brandName"
+                required
+                placeholder="e.g. Apex"
+                value={formData.brandName}
+                onChange={handleChange}
+                className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder-slate-600"
+              />
+            </div>
 
-        {/* Industry */}
-        <div className="space-y-2">
-          <label htmlFor="industry" className="block text-sm font-medium text-slate-300 flex items-center gap-2">
-            <Briefcase className="w-4 h-4" /> Industry / Niche
-          </label>
-          <input
-            type="text"
-            id="industry"
-            name="industry"
-            required
-            placeholder="e.g. Tech, Bakery, Real Estate"
-            value={formData.industry}
-            onChange={handleChange}
-            className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder-slate-600"
-          />
-        </div>
-
-        {/* Style Selection */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-end">
-            <label htmlFor="style" className="block text-sm font-medium text-slate-300 flex items-center gap-2">
-              <Layers className="w-4 h-4" /> Visual Style
-            </label>
-            <span className="text-xs text-indigo-400 font-medium">{activeStyle}</span>
+            <div className="space-y-2">
+              <label htmlFor="industry" className="block text-sm font-medium text-slate-300 flex items-center gap-2">
+                <Briefcase className="w-4 h-4" /> Industry
+              </label>
+              <input
+                type="text"
+                id="industry"
+                name="industry"
+                required
+                placeholder="e.g. Tech"
+                value={formData.industry}
+                onChange={handleChange}
+                className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder-slate-600"
+              />
+            </div>
           </div>
-          
-          {/* Dynamic Style Preview Box */}
+        </div>
+
+        {/* Section 2: Visual Style */}
+        <div className="space-y-4 pt-4 border-t border-slate-700/30">
           <div 
-            className={`h-24 w-full rounded-xl flex items-center justify-center overflow-hidden relative transition-all duration-300 shadow-inner ${previewConfig.bg} ${previewConfig.border || 'border border-slate-700'}`}
+            className="flex justify-between items-center cursor-pointer group"
+            onClick={() => setIsStyleExpanded(!isStyleExpanded)}
           >
-             {previewConfig.effect}
-             <span className={`relative z-10 text-xl md:text-2xl ${previewConfig.text}`}>
-               {activeStyle === LogoStyle.GLITCH_ART ? 'GLITCH' : (formData.brandName || 'BRAND')}
-             </span>
-             <div className="absolute bottom-2 right-2 opacity-50">
-                <Info className="w-4 h-4 text-current mix-blend-difference" />
-             </div>
+            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Visual Style</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-indigo-400 font-medium bg-indigo-500/10 px-2 py-1 rounded">{formData.style}</span>
+              {isStyleExpanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
-            {Object.values(LogoStyle).map((style) => (
-              <button
-                key={style}
-                type="button"
-                onMouseEnter={() => setHoveredStyle(style)}
-                onMouseLeave={() => setHoveredStyle(null)}
-                onClick={() => setFormData(prev => ({ ...prev, style }))}
-                className={`text-xs py-2 px-2 rounded-lg border transition-all duration-200 truncate ${
-                  formData.style === style
-                    ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
-                }`}
-                title={style}
+          {isStyleExpanded && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+               {/* Dynamic Style Preview Box */}
+              <div 
+                className={`h-24 w-full rounded-xl flex items-center justify-center overflow-hidden relative transition-all duration-300 shadow-inner ${previewConfig.bg} ${previewConfig.border || 'border border-slate-700'}`}
               >
-                {style}
-              </button>
-            ))}
-          </div>
+                {previewConfig.effect}
+                <span className={`relative z-10 text-xl md:text-2xl ${previewConfig.text} px-4 text-center`}>
+                  {activeStyle === LogoStyle.GLITCH_ART ? 'GLITCH' : (formData.brandName || 'BRAND')}
+                </span>
+                <div className="absolute bottom-2 right-2 opacity-50">
+                    <Info className="w-4 h-4 text-current mix-blend-difference" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                {Object.values(LogoStyle).map((style) => (
+                  <button
+                    key={style}
+                    type="button"
+                    onMouseEnter={() => setHoveredStyle(style)}
+                    onMouseLeave={() => setHoveredStyle(null)}
+                    onClick={() => setFormData(prev => ({ ...prev, style }))}
+                    className={`text-xs py-2 px-2 rounded-lg border transition-all duration-200 truncate ${
+                      formData.style === style
+                        ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                    }`}
+                    title={style}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Colors (New Component) */}
-        <ColorPicker 
-          value={formData.colors} 
-          onChange={handleColorChange} 
-        />
-
-        {/* Optional Icon */}
-        <div className="space-y-2">
-          <label htmlFor="icon" className="block text-sm font-medium text-slate-300 flex items-center gap-2">
-            <Sparkles className="w-4 h-4" /> Optional Symbol/Icon
-          </label>
-          <input
-            type="text"
-            id="icon"
-            name="icon"
-            placeholder="e.g. Mountain peak, Coffee bean, Abstract wave"
-            value={formData.icon}
-            onChange={handleChange}
-            className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder-slate-600"
+        {/* Section 3: Colors & Details */}
+        <div className="space-y-4 pt-4 border-t border-slate-700/30">
+          <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Refinements</h3>
+          <ColorPicker 
+            value={formData.colors} 
+            onChange={handleColorChange} 
           />
+
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+             {/* Optional Icon */}
+            <div className="space-y-2">
+              <label htmlFor="icon" className="block text-sm font-medium text-slate-300 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" /> Specific Symbol (Opt.)
+              </label>
+              <input
+                type="text"
+                id="icon"
+                name="icon"
+                placeholder="e.g. Wolf, Leaf"
+                value={formData.icon}
+                onChange={handleChange}
+                className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none placeholder-slate-600"
+              />
+            </div>
+
+            {/* Reference Image Upload */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-slate-300 flex items-center gap-2">
+                <ImageIcon className="w-4 h-4" /> Reference Image (Opt.)
+              </label>
+              
+              {!formData.referenceImage ? (
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-[50px] bg-slate-900 border border-dashed border-slate-600 hover:border-indigo-500 hover:bg-slate-800 rounded-lg flex items-center justify-center cursor-pointer transition-all group"
+                >
+                  <div className="flex items-center gap-2 text-slate-500 group-hover:text-indigo-400">
+                    <Upload className="w-4 h-4" />
+                    <span className="text-sm">Upload sketch/logo</span>
+                  </div>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handleImageUpload}
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-[50px] bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-between px-3 relative group">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="w-8 h-8 rounded bg-slate-800 flex-shrink-0 overflow-hidden border border-slate-600">
+                      <img src={formData.referenceImage} alt="Ref" className="w-full h-full object-cover" />
+                    </div>
+                    <span className="text-xs text-slate-300 truncate">Image uploaded</span>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={clearImage}
+                    className="p-1 hover:bg-slate-700 rounded-full text-slate-500 hover:text-red-400 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <button
@@ -287,7 +366,7 @@ export const LogoForm: React.FC<LogoFormProps> = ({ onSubmit, isGenerating }) =>
               : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-indigo-500/30'
           }`}
         >
-          {isGenerating ? 'Designing...' : 'Generate Logo'}
+          {isGenerating ? 'Designing...' : 'Generate Brand Identity'}
         </button>
       </form>
     </div>

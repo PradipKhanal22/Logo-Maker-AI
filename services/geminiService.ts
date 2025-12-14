@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { LogoFormData, LogoStyle } from "../types";
 
@@ -40,6 +41,20 @@ export const generateLogoImages = async (formData: LogoFormData): Promise<string
 
   const styleDirectives = getStyleEnhancements(formData.style);
 
+  let imagePart = null;
+  if (formData.referenceImage) {
+    // Extract base64 data (remove "data:image/xyz;base64," prefix)
+    const base64Data = formData.referenceImage.split(',')[1];
+    if (base64Data) {
+      imagePart = {
+        inlineData: {
+          data: base64Data,
+          mimeType: 'image/png' // Assuming PNG or generic image type for Gemini
+        }
+      };
+    }
+  }
+
   const basePrompt = `
     Create a Modern, Award-Winning Logo Design.
     
@@ -49,6 +64,7 @@ export const generateLogoImages = async (formData: LogoFormData): Promise<string
     - Primary Visual Style: ${formData.style}
     - Color Palette: ${formData.colors}
     ${formData.icon ? `- Key Icon/Symbol: ${formData.icon}` : ''}
+    ${imagePart ? '- REFERENCE IMAGE PROVIDED: Use the attached image as a strong structural and compositional reference. Transform this sketch/concept into a professional, polished vector-style logo while applying the requested Style and Colors. Do not just copy it; elevate it to professional standard.' : ''}
 
     Art Direction & Style Rules (${formData.style}):
     ${styleDirectives}
@@ -79,12 +95,15 @@ export const generateLogoImages = async (formData: LogoFormData): Promise<string
     const randomSeed = Math.floor(Math.random() * 10000000) + index;
 
     try {
+      const parts: any[] = [{ text: prompt }];
+      if (imagePart) {
+        parts.unshift(imagePart); // Add image first if available
+      }
+
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
         contents: {
-          parts: [
-            { text: prompt }
-          ]
+          parts: parts
         },
         config: {
           systemInstruction: getSystemPrompt(),

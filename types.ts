@@ -5,6 +5,7 @@ export interface LogoFormData {
   style: LogoStyle;
   colors: string;
   icon?: string;
+  referenceImage?: string; // Base64 string of the uploaded image
 }
 
 export enum LogoStyle {
